@@ -1,0 +1,22 @@
+\chapentry{Basic Operations}{1}{2}
+\secentry{Beginning and ending tasks}{1}{1}{2}
+\subsecentry{Beginning tasks}{1}{1}{1}{2}
+\subsecentry{Ending tasks}{1}{1}{2}{2}
+\secentry{Suspending and resuming tasks}{1}{2}{2}
+\secentry{Observations}{1}{3}{3}
+\secentry{Creating reminders}{1}{4}{3}
+\chapentry{Working with projects}{2}{4}
+\secentry{Creating projects and groups}{2}{1}{4}
+\secentry{Selecting projects and groups}{2}{2}{4}
+\subsecentry{Selecting project groups}{2}{2}{1}{4}
+\subsecentry{Selecting projects}{2}{2}{2}{4}
+\secentry{Deleting projects and groups}{2}{3}{4}
+\secentry{Task priorities}{2}{4}{4}
+\chapentry{Browsing the task queue}{3}{5}
+\chapentry{Saving and restoring}{4}{6}
+\chapentry{Using comments in files}{5}{7}
+\chapentry{Installation and configuration}{6}{8}
+\secentry{Installing sidebrain}{6}{1}{8}
+\secentry{Configuring sidebrain}{6}{2}{8}
+\subsecentry{Controlling the sidebrain display}{6}{2}{1}{8}
+\subsecentry{Customizing the save}{6}{2}{2}{8}
