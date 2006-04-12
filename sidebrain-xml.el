@@ -1,5 +1,5 @@
 ;;;; sidebrain-xml.el -- save and reload sidebrain data using an XML file
-;;; Time-stamp: <2006-03-24 15:03:45 jcgs>
+;;; Time-stamp: <2006-04-11 12:46:23 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -16,6 +16,18 @@
 ;;  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 (provide 'sidebrain-xml)
+
+(defvar sidebrain-potential-save-count 8
+  "Counter for potential saves.")
+
+(defun sidebrain-save-after-command ()
+  "Return whether to save after this command.
+Controlled by sidebrain-save-after-commands."
+  (or (eq sidebrain-save-after-commands t)
+      (and (integerp sidebrain-save-after-commands)
+	   (zerop (% (setq sidebrain-potential-save-count
+			   (1+ sidebrain-potential-save-count))
+		     sidebrain-save-after-commands)))))
 
 (defun sidebrain-insert-task-to-xml (task prefix)
   "Insert a representation of TASK."
@@ -146,9 +158,6 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
 	(sidebrain-save-observations observations (concat prefix "    ")))
       (insert prefix "    </task-queue-element>\n"))))
 
-(defvar sidebrain-xml-verbose nil
-  "*Whether sidebrain should report loading and saving in great detail.")
-
 (defun sidebrain-save-task-queue (this-queue &optional prefix)
   "Save THIS-QUEUE. Optionally output PREFIX at the start of each line."
   (unless prefix (setq prefix ""))
@@ -164,9 +173,6 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
 			   (quote-quotes (copy-sequence (car task)))
 			   prefix)))
   (insert prefix "  </task-queue>\n"))
-
-(defvar sidebrain-extra-file-header nil
-  "Either a string to include at the end of the XML header, or nil.")
 
 (defun sidebrain-prepare-file (file-name)
   "Set up a file for writing sidebrain data to."

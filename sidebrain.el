@@ -1,5 +1,5 @@
 ;;;; sidebrain.el -- programmer's memory aide
-;;; Time-stamp: <2006-04-06 15:00:18 john>
+;;; Time-stamp: <2006-04-11 10:12:27 john>
 ;;; see also sidebrain-browse.el
 
 ;; Author: John Sturdy
@@ -38,6 +38,7 @@ It could later be used to determine compatibility between implementations and da
   "Display the current task stack, etc.
 Creates the buffer as needed." t)
 
+(require 'sidebrain-custom)
 (require 'sidebrain-vars)
 (require 'sidebrain-macros)
 (require 'sidebrain-projects)
@@ -57,9 +58,6 @@ Creates the buffer as needed." t)
 ;; todo: suspend and resume to be able to splice part way up the current stack
 ;; todo: buttons, mouseover etc
 ;; todo: use Info-file-list-for-emacs
-
-(defvar sidebrain-task-label-placeholder-prefix "new task at "
-  "*String to put at start of tasks that are created because of the lack of tasks.")
 
 (defun sidebrain-ensure-task-stack (&optional ask)
   "Ensure there is a task stack data structure."

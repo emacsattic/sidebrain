@@ -1,5 +1,5 @@
 ;;;; sidebrain-display.el -- display sidebrain data
-;;; Time-stamp: <2006-02-20 11:06:24 john>
+;;; Time-stamp: <2006-04-11 10:16:33 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -16,32 +16,6 @@
 ;;  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 (provide 'sidebrain-display)
-
-(defvar sidebrain-buffer "*Task stack*"
- "The buffer for displaying the task stack.")
-
-(defvar sidebrain-task-format "%s\n"
-  "Format string for displaying tasks.")
-
-(defvar sidebrain-observation-format "%s\n"
-  "Format string for displaying observations.")
-
-(defvar sidebrain-popup-frame nil
-  "*Whether to use a popup frame for sidebrain.
-It might be better to remove this variable, and couple of others, and
-let the user set special-display-buffer-names to include
-sidebrain-buffer.")
-
-(defvar sidebrain-frame-parameters 
-  '((width . 80) (height . 8)
-    (auto-raise t)
-    (top . 0)
-    (left . 0)
-    (menu-bar-lines 1)
-    (tool-bar-lines 1)
-    (title . "Sidebrain")
-    (modeline))
-  "*Parameters for popup frame for sidebrain.")
 
 (defun sidebrain-make-visible ()
   "Make the task stack visible."

@@ -1,5 +1,5 @@
 ;;;; sidebrain-todo.el -- sidebrain interface to traditional comments in file
-;;; Time-stamp: <2006-02-20 11:00:12 john>
+;;; Time-stamp: <2006-04-11 10:18:53 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -16,19 +16,6 @@
 ;;  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 (provide 'sidebrain-todo)
-
-(defvar to-do-comment-pattern
-  ;; Finding oneself is normally seen as good (in terms of personal
-  ;; growth), but not here: so split the string literal so it's not
-  ;; found when we search the buffer using it as the search string!
-  (concat "to"
-	  "do: \\(.+\\)") ; todo: probably should strip comment trailers from end of line
-  "*Pattern for recognizing comments marking things to do.")
-
-(defvar to-do-done-comment-pattern
-  (concat "do" ;; see comment in to-do-comment-pattern definition
-	  "ne: \\(.+\\)")
-  "*Pattern for recognizing comments marking things that have been done.")
 
 (defun nearest (back forward)
   "Return whichever of BACK and FORWARD is nearer to point.
@@ -56,30 +43,6 @@ Behaves sensibly if either or both are null."
 	(if (looking-at to-do-comment-pattern)
 	    (match-string-no-properties 1)
 	  nil)))))
-
-(defvar sidebrain-file-projects nil
-  "List describing which projects certain files belong in.
-Each element is a list of three strings:
-  a regular expression to match against the filename
-  the project group name
-  the project name
-The first one to match is used.
-If the group and the project are nil, the comments are not read from the file.
-The functions on sidebrain-determine-project-hook are used first.")
-
-(defvar sidebrain-determine-project-hook nil
-  "Functions to find which project and project group a file belongs in.
-    Functions on this list should return
-      a list of (group project) if matched,
-      a list of (nil nil) if they want to say this file's comments should be ignored
-      nil if they do not recognize the filename
-The first one to answer gets it.
-If none of these functions answers, sidebrain-file-projects are tried.")
-
-(defvar sidebrain-use-default-project nil
-  "*Whether a default project should be used when the project file cannot be determined.
-Otherwise, sidebrain-read-todo-from-comments will prompt for a group and project.
-Set this non-nil to make it work silently.")
 
 (defun sidebrain-determine-project ()
   "Determine, if possible, the group and project to use.

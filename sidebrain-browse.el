@@ -1,5 +1,5 @@
 ;;;; sidebrain-browse.el -- browser for sidebrain.el
-;;; Time-stamp: <2006-04-06 16:15:18 john>
+;;; Time-stamp: <2006-04-11 10:15:35 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -19,9 +19,6 @@
 (require 'sidebrain)
 
 ;;;; browse tasks (and major mode thereunto)
-
-(defvar sidebrain-browse-mode-hook nil
-  "Functions to run on entering sidebrain-browse-mode.")
 
 (defvar sidebrain-browse-tasks-mode-keymap (make-keymap "Browse tasks")
   "Major mode for browsing tasks.")
@@ -47,9 +44,6 @@
 
 (defvar sidebrain-browse-tasks-project-group-end nil
   "End of the project group.")
-
-(defvar sidebrain-browse-tasks-double-spaced t
-  "*Whether to put blank lines between entries in the tasks browser.")
 
 (defun sidebrain-browse-tasks-get-project-group ()
   "Find the project group that the current task is part of."

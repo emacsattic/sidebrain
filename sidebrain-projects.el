@@ -1,5 +1,5 @@
 ;;;; sidebrain-projects.el -- sidebrain project and task data structures
-;;; Time-stamp: <2006-03-24 18:46:34 jcgs>
+;;; Time-stamp: <2006-04-11 10:17:46 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -39,14 +39,6 @@ It is returned as a cons of the name and the tasks in the project."
       (if (consp project)
 	  project
 	(error "Bad type for sidebrain-get-project: %S" project)))))
-
-(defvar sidebrain-always-available-groups
-  '("special" "other")
-  "*Groups which always get created if they do not exist,
-and thus appear always to exist.")
-
-(defvar sidebrain-create-groups-on-demand nil
-  "*Whether to make all groups spring into existence as required.")
 
 (defun sidebrain-set-project-group (group &optional auto-create)
   "Set the current project group to GROUP.
@@ -250,9 +242,6 @@ If this was the current project, then no project will be current."
   (list (car sidebrain-current-project-group)
 	(car sidebrain-current-project)
 	(sidebrain-task-stack-name)))
-
-(defvar sidebrain-switch-self-repair t
-  "*Whether sidebrain-set-task-triplet should fill in defaults if given an incomplete triplet.")
 
 (defun sidebrain-set-task-triplet (triplet)
   "Select a task given as (project-group project task).
