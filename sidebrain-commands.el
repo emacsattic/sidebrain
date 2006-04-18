@@ -1,5 +1,5 @@
 ;;;; sidebrain-commands.el -- main commands for sidebrain
-;;; Time-stamp: <2006-03-24 18:50:55 jcgs>
+;;; Time-stamp: <2006-04-12 11:52:08 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -279,9 +279,6 @@ Returns the name under which it was suspended."
   (interactive)
   (let ((initial-label (car sidebrain-current-stack)))
     (message "Existing label for task being suspended is \"%S\"" initial-label)
-    (when (and (stringp initial-label)
-	       (string-match sidebrain-task-label-placeholder-prefix initial-label))
-      (message "Warning: suspending task with place-holder for label"))
     (let ((top-task (car (sidebrain-task-stack)))
 	  (group (car sidebrain-current-project-group))
 	  (label (if no-edit
