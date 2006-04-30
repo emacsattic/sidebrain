@@ -1,5 +1,5 @@
 ;;;; sidebrain-projects.el -- sidebrain project and task data structures
-;;; Time-stamp: <2006-04-11 10:17:46 john>
+;;; Time-stamp: <2006-04-25 09:42:28 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -78,7 +78,7 @@ create the group if it does not exist."
   "The default project group, when reading a project group from the user.")
 
 (defun sidebrain-completing-read-project-group (&optional prompt default nonexistent-ok)
-  "Prompt the user for a project group name.
+  "Prompt the user for a project group name, and return the name as a string.
 If PROMPT is given, use it.
 If DEFAULT is given, and is a project group or project group name, use it when prompting.
 If DEFAULT is t, use the current project group name as the default.
@@ -176,7 +176,8 @@ the current group not to have one of that name."
 
 (defun sidebrain-completing-read-project (&optional group prompt auto-create default)
   "Prompt the user for a project from the given GROUP, or the current if none given.
-PROMPT may also be specified, as may AUTO-CREATE and DEFAULT."
+PROMPT may also be specified, as may AUTO-CREATE and DEFAULT.
+The result is the name of the selected project, as a string."
   ;; (with-output-to-temp-buffer (format "*Backtrace for project %S*" (gensym)) (backtrace))
   (let ((use-group (or group sidebrain-current-project-group)))
     (setq sidebrain-completing-read-project-history (mapcar 'car (cdr use-group)))
