@@ -1,5 +1,5 @@
 ;;;; sidebrain-commands.el -- main commands for sidebrain
-;;; Time-stamp: <2006-04-12 11:52:08 john>
+;;; Time-stamp: <2006-04-25 12:00:40 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -29,11 +29,12 @@
   "Begin a task described as TASK-STRING."
   (interactive "sTask: ")
   (sidebrain-ensure-task-stack)
-  (message "beginning task; stack is %S" (sidebrain-task-stack))
+  ;; (message "beginning task; stack is %S" (sidebrain-task-stack))
   (when (and (null (sidebrain-task-stack))
 	     (not same-project))
     (let* ((group (sidebrain-completing-read-project-group "Project group (default %s): " t t))
-	   (project (sidebrain-completing-read-project nil "Project (default %s): " t
+	   (project (sidebrain-completing-read-project (assoc group sidebrain-project-groups)
+						       "Project (default %s): " t
 						       (if (eq group (car sidebrain-current-project-group))
 							   (car sidebrain-current-project)
 							 "General"))))
@@ -156,7 +157,7 @@ Second optional is functions to use instead of those on sidebrain-record-task-ho
 		     (string-match sidebrain-auto-ask-info-gathering-results task-text))
 		(sidebrain-observe
 		 (read-from-minibuffer
-		  (format "What did you find about %s%s"
+		  (format "What did you find about %s%s "
 			  task-text
 			  (if (string-match "\\?[ ]*$" task-text) "" "?"))))))
 	  (if linked-triplet
@@ -286,8 +287,9 @@ Returns the name under which it was suspended."
 		   (rplaca sidebrain-current-stack
 			   (read-from-minibuffer "Label for suspended task: "
 						 initial-label)))))
-      (setf (sidebrain-task-file top-task) buffer-file-name
-	    (sidebrain-task-line-number top-task) (count-lines (point-min) (point)))
+      (when top-task
+	(setf (sidebrain-task-file top-task) buffer-file-name
+	      (sidebrain-task-line-number top-task) (count-lines (point-min) (point))))
       (run-hook-with-args 'sidebrain-suspend-hook (cdr sidebrain-current-stack))
       (push sidebrain-current-stack sidebrain-suspension-history)
       (setq sidebrain-current-stack nil)
