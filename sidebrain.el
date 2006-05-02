@@ -1,5 +1,5 @@
 ;;;; sidebrain.el -- programmer's memory aide
-;;; Time-stamp: <2006-04-11 10:12:27 john>
+;;; Time-stamp: <2006-05-01 12:36:45 jcgs>
 ;;; see also sidebrain-browse.el
 
 ;; Author: John Sturdy
@@ -78,11 +78,14 @@ Creates the buffer as needed." t)
 	     t)
 	  (sidebrain-set-project (car sidebrain-current-project-group) ; use group name as default project name
 				 t)))
-      (let ((new-pair (cons (car sidebrain-current-project) ; use project name as default task name
-			    (make-sidebrain-task-stack))))
-	(with-output-to-temp-buffer (symbol-name (gensym "*Backtrace for new task ")) (backtrace))
-	(pushnew new-pair
-	      (cdr sidebrain-current-project) :test 'equal)
+      (let* ((new-name (car sidebrain-current-project))
+	     (new-pair (assoc new-name (cdr sidebrain-current-project))))
+	(when (null new-pair)
+	  (setq new-pair (cons new-name	; use project name as default task name
+			       (make-sidebrain-task-stack)))
+	  (pushnew new-pair
+		   (cdr sidebrain-current-project) :test 'equal)
+	  (with-output-to-temp-buffer (symbol-name (gensym "*Backtrace for new task ")) (backtrace)))
 	(setq sidebrain-current-stack new-pair)))))
 
 (defun sidebrain-choose-task (&optional prompt)
