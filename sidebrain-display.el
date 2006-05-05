@@ -1,5 +1,5 @@
 ;;;; sidebrain-display.el -- display sidebrain data
-;;; Time-stamp: <2006-04-11 10:16:33 john>
+;;; Time-stamp: <2006-05-05 12:29:40 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -28,12 +28,12 @@
     (message "in sidebrain-make-visible, old-frame=%S" old-frame)
     (display-buffer buffer t)
     (shrink-window-if-larger-than-buffer (get-buffer-window buffer))
-    (when nil pop-up-frames
+    (when pop-up-frames
       (set-frame-height
        (selected-frame)			; use get-buffer-window and something else, to get the frame? this is getting the wrong one
        (count-lines (point-min) (point-max))))
     (message "in sidebrain-make-visible, frame is %S, old-frame is %S" (selected-frame) old-frame)
-    (select-frame old-frame) ; todo: should I be using redirect-frame-focus instead?
+    (select-frame old-frame)
     (message "Restored old frame, supposedly; now %S is current" (selected-frame))))
 
 (defvar sidebrain-display-divider nil

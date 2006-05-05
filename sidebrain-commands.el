@@ -1,5 +1,5 @@
 ;;;; sidebrain-commands.el -- main commands for sidebrain
-;;; Time-stamp: <2006-04-25 12:00:40 jcgs>
+;;; Time-stamp: <2006-05-05 12:15:14 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -95,6 +95,8 @@ Second optional is functions to use instead of those on sidebrain-record-task-ho
     (if task
 	(let ((linked-triplet nil))
 	  (sidebrain-stop-stopwatch task 'time-spent 'time-started 'time-ended)
+	  ;; This is a bit like run-hook-with-args-until-failure, but each function
+	  ;; after the first is called on the result of the previous one.
 	  (let ((recorded task)
 		(functions (or filter-functions
 			       sidebrain-record-task-hook)))
@@ -103,22 +105,27 @@ Second optional is functions to use instead of those on sidebrain-record-task-ho
 		    functions (cdr functions)))
 	    (when recorded
 	      (push recorded sidebrain-history)))
+	  ;; now remove the task
 	  (sidebrain-pop-task)
 	  (let ((new-current (car (sidebrain-task-stack))))
+	    ;; is there still anything on this task stack?
 	    (if new-current
 		(progn
+		  ;; Yes, stack not empty yet. Start the timer on the new task.
 		  (incf (sidebrain-task-subtasks new-current))
 		  (sidebrain-start-stopwatch new-current 'time-current 'time-started-current))
-	      ;; the stack is now empty
-	      ;; usually want to clear the observations now, as the work they apply to has finished
-	      (if (and sidebrain-clear-observations-on-emptying-stack
-		       (sidebrain-observations)
-		       (or (eq sidebrain-clear-observations-on-emptying-stack t)
-			   (and (not (eq sidebrain-clear-observations-on-emptying-stack nil))
-				(y-or-n-p "Clear observations? "))))
-		  (when (sidebrain-task-stack-p (cdr sidebrain-current-stack))
-		    (setf (sidebrain-task-stack-observations (cdr sidebrain-current-stack))
-			  nil)))
+	      ;; The stack is now empty.
+	      ;; We usually want to clear the observations now, as the
+	      ;; work they apply to has finished
+	      (when (and sidebrain-clear-observations-on-emptying-stack
+			 (sidebrain-task-stack-p (cdr sidebrain-current-stack))
+			 (sidebrain-observations)
+			 (or (eq sidebrain-clear-observations-on-emptying-stack t)
+			     (and (not (eq sidebrain-clear-observations-on-emptying-stack nil))
+				  (y-or-n-p "Clear observations? "))))
+		(setf (sidebrain-task-stack-observations (cdr sidebrain-current-stack))
+		      nil))
+	      ;; If this stack was "linked" from another, offer to resume the linked stack.
 	      (let ((task-struct (cdr sidebrain-current-stack)))
 		(when (sidebrain-task-stack-p task-struct)
 		  (let ((link-group (sidebrain-task-stack-link-group task-struct))
@@ -127,15 +134,18 @@ Second optional is functions to use instead of those on sidebrain-record-task-ho
 		    (when (and (stringp link-group)
 			       (stringp link-project)
 			       (stringp link-task)
-			       (yes-or-no-p (format "Resume %s:%s:%s? " link-group link-project link-task)))
+			       (yes-or-no-p
+				(format "Resume %s:%s:%s? "
+					link-group link-project link-task)))
 		      (setq linked-triplet (list link-group link-project link-task))))))
 	      ;; remove it from its project
 	      (sidebrain-delete-current-task-stack)))
 	  ;; if the task came from a todo comment in a file, remove it from the file
 	  (let ((file (sidebrain-ok-file-name (sidebrain-get-task-property task 'file))))
-	    (message "origin file is %S" file)
+	    ;; (message "origin file is %S" file)
 	    (when (and (stringp file) (file-writable-p file))
 	      (sidebrain-file-comment-mark-done task file)))
+	  ;; update the task stack display
 	  (if (not (get-buffer sidebrain-buffer))
 	      (sidebrain-display)
 	    (set-buffer sidebrain-buffer)
@@ -147,11 +157,15 @@ Second optional is functions to use instead of those on sidebrain-record-task-ho
 				 (sidebrain-get-task-property task 'display-end)))
 	      (progn
 		(error "No display region defined for task")
+		;; old code (from before display-start, display-end markers) follows...
+		;; leave it for now in case it's useful later
 		(goto-char (point-min))
 		(beginning-of-line 2)
 		(let ((buffer-read-only nil))
 		  (delete-region (point-min) (point)))))
 	    (sidebrain-make-visible))
+	  ;; If it was an information-gathering task (has question
+	  ;; syntax) as the user for the information found:
 	  (let ((task-text (sidebrain-task-text task)))
 	    (if (and (stringp sidebrain-auto-ask-info-gathering-results)
 		     (string-match sidebrain-auto-ask-info-gathering-results task-text))
@@ -160,6 +174,7 @@ Second optional is functions to use instead of those on sidebrain-record-task-ho
 		  (format "What did you find about %s%s "
 			  task-text
 			  (if (string-match "\\?[ ]*$" task-text) "" "?"))))))
+	  ;; If there was a linked task, we now switch to it:
 	  (if linked-triplet
 	      (sidebrain-set-task-triplet linked-triplet)
 	    (sidebrain-command-tidyup)))
@@ -279,7 +294,7 @@ called \"special\") will resume the task that was active before it.
 Returns the name under which it was suspended."
   (interactive)
   (let ((initial-label (car sidebrain-current-stack)))
-    (message "Existing label for task being suspended is \"%S\"" initial-label)
+    ;; (message "Existing label for task being suspended is \"%S\"" initial-label)
     (let ((top-task (car (sidebrain-task-stack)))
 	  (group (car sidebrain-current-project-group))
 	  (label (if no-edit
@@ -287,16 +302,16 @@ Returns the name under which it was suspended."
 		   (rplaca sidebrain-current-stack
 			   (read-from-minibuffer "Label for suspended task: "
 						 initial-label)))))
+      ;; update the "which file we were in" field of the task
       (when top-task
 	(setf (sidebrain-task-file top-task) buffer-file-name
 	      (sidebrain-task-line-number top-task) (count-lines (point-min) (point))))
       (run-hook-with-args 'sidebrain-suspend-hook (cdr sidebrain-current-stack))
       (push sidebrain-current-stack sidebrain-suspension-history)
       (setq sidebrain-current-stack nil)
-      (when (and (not resuming-another)
-		 (equal group "special"))
-	(sidebrain-set-task-triplet sidebrain-latest-non-special-task))
-      (unless (equal group "special")
+      (if (equal group "special")
+	  (unless resuming-another
+	    (sidebrain-set-task-triplet sidebrain-latest-non-special-task))
 	(setq sidebrain-latest-non-special-task (sidebrain-current-task-triplet)))
       (sidebrain-command-tidyup)
       label)))

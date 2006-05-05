@@ -1,5 +1,5 @@
 ;;;; sidebrain-debug.el -- debugging stuff for sidebrain
-;;; Time-stamp: <2006-02-21 12:58:45 jcgs>
+;;; Time-stamp: <2006-05-05 17:48:43 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -61,24 +61,24 @@
 
      (sidebrain-new-project-group "research programming")
      (sidebrain-new-project "sidebrain")
-     (sidebrain-begin-task "release sidebrain")
-     (sidebrain-begin-task "refactor sidebrain")
-     (sidebrain-begin-task "fix data storage")
+     (sidebrain-begin-task "release sidebrain" t)
+     (sidebrain-begin-task "refactor sidebrain" t)
+     (sidebrain-begin-task "fix data storage" t)
      (sidebrain-observe "Using defstruct, since what I am handling are structures")
      (sidebrain-observe "It seems to make a lot more sense this way")
      (sidebrain-suspend-task t)
-     (sidebrain-begin-task "review sidebrain effort logging")
+     (sidebrain-begin-task "review sidebrain effort logging" t)
      (sidebrain-observe "Quite what is the time spent on something?")
      (sidebrain-suspend-task t)
-     (sidebrain-begin-task "re-write sidebrain interface to activities")
+     (sidebrain-begin-task "re-write sidebrain interface to activities" t)
      (sidebrain-resume-task "review sidebrain effort logging" t)
-     (sidebrain-begin-task "Think about what this really means")
+     (sidebrain-begin-task "Think about what this really means" t)
      (sidebrain-new-project "versor")
-     (sidebrain-begin-task "recenter display for both directions of movement")
+     (sidebrain-begin-task "recenter display for both directions of movement" t)
      (sidebrain-reminder "continue work on languide" nil nil "research programming" "versor")
      (sidebrain-new-project-group "research writing")
      (sidebrain-new-project "sidebrain writing")
-     (sidebrain-begin-task "write sidebrain manual")
+     (sidebrain-begin-task "write sidebrain manual" t)
      (sidebrain-reminder "write paper about interruptions" nil nil
 			 "research writing" "sidebrain writing")
      (sidebrain-reminder "write paper about attention focussing{explain the problem{refer to 5+-2 paper}}"

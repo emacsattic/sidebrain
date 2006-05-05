@@ -1,5 +1,5 @@
 ;;;; sidebrain-browse.el -- browser for sidebrain.el
-;;; Time-stamp: <2006-04-11 10:15:35 john>
+;;; Time-stamp: <2006-05-05 15:48:13 john>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -159,24 +159,26 @@
     (setq sidebrain-browse-tasks-project-overlay nil))
   (save-excursion
     (let* ((stack-start (point))
-	   (stack-end (save-excursion
-			(forward-char 1)
-			;; look for the end of this task
-			(if (re-search-forward sidebrain-browse-tasks-stack-start-regexp
-					       (point-max) t)
-			    ;; not the last one in the buffer
+	   (stack-end (if (eobp)
+			  (point)
+			(save-excursion
+			  (forward-char 1)
+			  ;; look for the end of this task
+			  (if (re-search-forward sidebrain-browse-tasks-stack-start-regexp
+						 (point-max) t)
+			      ;; not the last one in the buffer
+			      (progn
+				(match-beginning 0)
+				(if sidebrain-browse-tasks-double-spaced
+				    (beginning-of-line 0)
+				  (beginning-of-line 1))
+				(point))
+			    ;; the last one in the buffer
 			    (progn
-			      (match-beginning 0)
-			      (if sidebrain-browse-tasks-double-spaced
-				(beginning-of-line 0)
-				(beginning-of-line 1))
-			      (point))
-			  ;; the last one in the buffer
-			  (progn
-			    (goto-char (point-max))
-			    (when sidebrain-browse-tasks-double-spaced
-			      (beginning-of-line -2))
-			    (point)))))
+			      (goto-char (point-max))
+			      (when sidebrain-browse-tasks-double-spaced
+				(beginning-of-line -2))
+			      (point))))))
 	   )
       ;; (message "start=%S end=%S" stack-start stack-end)
       (when (and stack-start stack-end)
@@ -301,7 +303,8 @@
 	(sidebrain-remove-tasks-labelled label)
 	(sidebrain-browse-tasks)
 	(when (<= where (point-max))
-	  (goto-char where))))))
+	  (goto-char where))
+	(sidebrain-browse-tasks-update-highlight)))))
 
 ;;;; grep-like filter for tasks
 

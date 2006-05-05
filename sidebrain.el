@@ -1,5 +1,5 @@
 ;;;; sidebrain.el -- programmer's memory aide
-;;; Time-stamp: <2006-05-01 12:36:45 jcgs>
+;;; Time-stamp: <2006-05-05 18:06:06 john>
 ;;; see also sidebrain-browse.el
 
 ;; Author: John Sturdy
@@ -29,7 +29,7 @@
 (require 'time-date)
 (require 'xml)
 
-(defconst sidebrain-version "0.3"
+(defconst sidebrain-version "1.0"
   "The version number for this version of sidebrain.
 This is written into the saved data, but not currently used when the data is loaded.
 It could later be used to determine compatibility between implementations and data.")
@@ -85,7 +85,21 @@ Creates the buffer as needed." t)
 			       (make-sidebrain-task-stack)))
 	  (pushnew new-pair
 		   (cdr sidebrain-current-project) :test 'equal)
-	  (with-output-to-temp-buffer (symbol-name (gensym "*Backtrace for new task ")) (backtrace)))
+	  ;; (with-output-to-temp-buffer (symbol-name (gensym "*Backtrace for new task ")) (backtrace))
+	  ;; The stack can look like this:
+	  ;;   sidebrain-ensure-task-stack()
+	  ;;   sidebrain-current-task-triplet()
+	  ;;   sidebrain-suspend-task(t t)
+	  ;;   sidebrain-resume-task("versor" t "research writing" "other paper ...
+	  ;;   sidebrain-set-task-triplet(("research writing" "other papers" "v ...
+	  ;;   (progn (message "Typing break is on task stack, suspending it")  ...
+	  ;;   (if (equal top-task-text sidebrain-type-break-string) (progn (me ...
+	  ;;   (when (equal top-task-text sidebrain-type-break-string) (message ...
+	  ;;   (let* ((top-task ...) (top-task-text ...)) (message "comparing % ...
+	  ;;   sidebrain-end-type-break()
+	  ;;   run-hooks(type-break-end-break-hook)
+
+	  )
 	(setq sidebrain-current-stack new-pair)))))
 
 (defun sidebrain-choose-task (&optional prompt)
