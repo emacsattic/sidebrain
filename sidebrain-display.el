@@ -1,5 +1,5 @@
 ;;;; sidebrain-display.el -- display sidebrain data
-;;; Time-stamp: <2006-05-05 12:29:40 john>
+;;; Time-stamp: <2006-12-05 12:06:35 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -17,24 +17,63 @@
 
 (provide 'sidebrain-display)
 
+(defvar sidebrain-frame-width-fudge-factor 0
+  "How much extra to allow for the width of the sidebrain frame.
+This seems to be needed for NTemacs, where the width unit doesn't seem to be
+characters of the right font.")
+
 (defun sidebrain-make-visible ()
   "Make the task stack visible."
   (let ((display-buffer-reuse-frames sidebrain-popup-frame)
-	;; could use special-display-buffer-names?
+	(special-display-buffer-names (if sidebrain-popup-frame
+					  (cons (or (cdr (assoc 'title sidebrain-frame-parameters))
+						    "Sidebrain")
+						special-display-buffer-names)
+					special-display-buffer-names))
 	(pop-up-frames sidebrain-popup-frame)
 	(buffer (get-buffer sidebrain-buffer))
 	(pop-up-frame-alist sidebrain-frame-parameters)
 	(old-frame (selected-frame)))
-    (message "in sidebrain-make-visible, old-frame=%S" old-frame)
-    (display-buffer buffer t)
-    (shrink-window-if-larger-than-buffer (get-buffer-window buffer))
-    (when pop-up-frames
-      (set-frame-height
-       (selected-frame)			; use get-buffer-window and something else, to get the frame? this is getting the wrong one
-       (count-lines (point-min) (point-max))))
-    (message "in sidebrain-make-visible, frame is %S, old-frame is %S" (selected-frame) old-frame)
-    (select-frame old-frame)
-    (message "Restored old frame, supposedly; now %S is current" (selected-frame))))
+    (save-window-excursion
+      (set-buffer buffer)
+      (goto-char (point-min))
+      (end-of-line 1)
+      (let* ((height 3)			; mode-line, minibuffer, fencepost effect
+	     (width (current-column))
+	     (height-pair (assoc 'height sidebrain-frame-parameters))
+	     (width-pair (assoc 'width sidebrain-frame-parameters)))
+	(while (not (eobp))
+	  (end-of-line 2)
+	  (setq height (1+ height)
+		width (max width (current-column)))
+	  ;; (message "\"%s\" is %d wide, brings width to %d" (buffer-substring (point-at-bol) (point)) (current-column) width)
+	  )
+	(setq width (max width (current-column)))
+	(when height-pair (rplacd height-pair height))
+	(when width-pair (rplacd width-pair width))
+	;; (message "in sidebrain-make-visible, old-frame=%S" old-frame)
+	(display-buffer buffer t)
+	(let* ((sidebrain-window (get-buffer-window buffer t)))
+	  (when sidebrain-window
+	    (shrink-window-if-larger-than-buffer sidebrain-window)
+	    (when pop-up-frames
+	      (message "setting-frame-height %S to %d, width %d"
+		       (window-frame sidebrain-window) height width)
+	      (set-frame-height (window-frame sidebrain-window)
+				height)
+	      (set-frame-width (window-frame sidebrain-window)
+			       (cond
+				((integerp sidebrain-frame-width-fudge-factor)
+				 (+ width sidebrain-frame-width-fudge-factor))
+				((floatp sidebrain-frame-width-fudge-factor)
+				 (* width sidebrain-frame-width-fudge-factor))
+				(t width)))))))
+      (message "in sidebrain-make-visible, frame is %S, old-frame is %S" (selected-frame) old-frame)
+      ;; Info seems to suggest switch-frame might be what I really
+      ;; want, but it's not defined, at least on ntemacs (which is the
+      ;; only one on which I'm getting this problem, I think)
+      (select-frame old-frame)
+      (message "Restored old frame, supposedly; now %S is current" (selected-frame)))))
 
 (defvar sidebrain-display-divider nil
   "Divider string for sidebrain display.")
