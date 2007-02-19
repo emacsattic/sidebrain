@@ -1,5 +1,5 @@
 ;;;; sidebrain-projects.el -- sidebrain project and task data structures
-;;; Time-stamp: <2006-04-25 09:42:28 jcgs>
+;;; Time-stamp: <2006-11-07 22:09:26 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -15,7 +15,6 @@
 ;;  with this program; if not, write to the Free Software Foundation, Inc.,
 ;;  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-(provide 'sidebrain-projects)
 (require 'sidebrain-macros)
 
 (defun sidebrain-get-project-group (group)
@@ -281,5 +280,7 @@ Returns the previous task as a triplet."
 		(sidebrain-begin-task task t))
 	    (message "Non-string or empty string given as task to sidebrain-set-task-triplet"))))
       old)))
+
+(provide 'sidebrain-projects)
 
 ;;; end of sidebrain-projects.el
