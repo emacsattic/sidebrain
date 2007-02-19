@@ -1,5 +1,5 @@
 ;;;; sidebrain-xml.el -- save and reload sidebrain data using an XML file
-;;; Time-stamp: <2006-04-11 12:46:23 john>
+;;; Time-stamp: <2007-02-13 20:06:49 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -94,7 +94,8 @@ Controlled by sidebrain-save-after-commands."
   "Insert an XML representation of OBSERVATIONS, with PREFIX before each line."
   (insert prefix "<observations>\n")
   (dolist (observation observations)
-    (insert prefix "  <observation>" observation "</observation>\n"))
+    (when observation
+	(insert prefix "  <observation>" observation "</observation>\n")))
   (insert prefix "</observations>\n\n"))
 
 (defun quote-quotes (string &optional quoted-quote unquoted-quote)
@@ -201,7 +202,8 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
 	  sidebrain-history)
       (save-window-excursion
 	(let* ((visiting (find-buffer-visiting sidebrain-file-name))
-	       (viewing (eq (current-buffer) visiting)))
+	       (viewing (and visiting
+			     (get-buffer-window visiting))))
 	  (setq sidebrain-saved-at (current-time-string))
 	  (sidebrain-prepare-file sidebrain-file-name)
 	  (insert "  <project-groups")
@@ -244,7 +246,8 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
 		  (bury-buffer nil)))
 	    (kill-buffer nil)))
 	(let* ((visiting (find-buffer-visiting sidebrain-history-file-name))
-	       (viewing (eq (current-buffer) visiting)))
+	       (viewing (and visiting
+			     (get-buffer-window visiting))))
 	  (sidebrain-prepare-file sidebrain-history-file-name)
 	  (insert "  <history>\n")
 	  (insert "    <tasks-ended>\n")
@@ -271,62 +274,63 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
 
 (defun sidebrain-extract-task-from-xml (task)
   "Turn TASK (in the format we get from the XML reader) into a task structure."
-  (unless (eq (first task) 'task) (error "%S is not a task" task))
-  (let* ((attributes (second task))
-	 (start-time-pair (assoc 'time-started attributes))
-	 (start-time (if start-time-pair
-			 (date-to-time (cdr start-time-pair))
+  (when (consp task)
+    (unless (eq (first task) 'task) (error "%S is not a task" task))
+    (let* ((attributes (second task))
+	   (start-time-pair (assoc 'time-started attributes))
+	   (start-time (if start-time-pair
+			   (date-to-time (cdr start-time-pair))
+			 nil))
+	   (end-time-pair (assoc 'time-ended attributes))
+	   (end-time (if end-time-pair
+			 (date-to-time (cdr end-time-pair))
 		       nil))
-	 (end-time-pair (assoc 'time-ended attributes))
-	 (end-time (if end-time-pair
-		       (date-to-time (cdr end-time-pair))
-		     nil))
-	 (time-spent-pair (assoc 'time-spent attributes))
-	 (time-spent (seconds-to-time
-		      (if time-spent-pair 
-			  (string-to-int (cdr time-spent-pair))
-			0)))
-	 (time-current-pair (assoc 'time-current attributes))
-	 (time-current (seconds-to-time
-			(if time-current-pair 
-			    (string-to-int (cdr time-current-pair))
+	   (time-spent-pair (assoc 'time-spent attributes))
+	   (time-spent (seconds-to-time
+			(if time-spent-pair 
+			    (string-to-int (cdr time-spent-pair))
 			  0)))
-	 (subtasks-pair (assoc 'subtasks attributes))
-	 (subtasks (if subtasks-pair
-		       (string-to-int (cdr subtasks-pair))
-		     0))
-	 (suspensions-pair (assoc 'suspensions attributes))
-	 (suspensions (if suspensions-pair
-			  (string-to-int (cdr suspensions-pair))
-			0))
-	 (file-pair (assoc 'file attributes))
-	 (raw-file (cdr file-pair))
-	 (file (sidebrain-ok-file-name
-		(if (stringp raw-file)
-		    (let ((modified
-			   (run-hook-with-args-until-success 'sidebrain-filename-load-hooks raw-file)))
-		      (or modified raw-file))
-		  raw-file)))
-	 (line-pair (assoc 'line-number attributes))
-	 (line-number (cond
-		       ((numberp (cdr line-pair)) (cdr line-pair))
-		       ((stringp (cdr line-pair)) (string-to-int (cdr line-pair)))
-		       (t nil)))
-	 (text (third task)))
-    (when sidebrain-xml-verbose
-      (message "Making task from %S, raw-file=%S file=%S start-time=%S end-time=%S time-spent=%S time-current=%S line-pair=%S"
-	       task raw-file file start-time end-time time-spent time-current line-pair))
-    (make-sidebrain-task :text text
-			 :file file
-			 :line-number line-number
-			 :time-started start-time
-			 :time-ended end-time
-			 :time-spent time-spent
-			 :subtasks subtasks
-			 :suspensions suspensions
-			 ;; todo: keystrokes too (and in writer code)
-			 )
-    ))
+	   (time-current-pair (assoc 'time-current attributes))
+	   (time-current (seconds-to-time
+			  (if time-current-pair 
+			      (string-to-int (cdr time-current-pair))
+			    0)))
+	   (subtasks-pair (assoc 'subtasks attributes))
+	   (subtasks (if subtasks-pair
+			 (string-to-int (cdr subtasks-pair))
+		       0))
+	   (suspensions-pair (assoc 'suspensions attributes))
+	   (suspensions (if suspensions-pair
+			    (string-to-int (cdr suspensions-pair))
+			  0))
+	   (file-pair (assoc 'file attributes))
+	   (raw-file (cdr file-pair))
+	   (file (sidebrain-ok-file-name
+		  (if (stringp raw-file)
+		      (let ((modified
+			     (run-hook-with-args-until-success 'sidebrain-filename-load-hooks raw-file)))
+			(or modified raw-file))
+		    raw-file)))
+	   (line-pair (assoc 'line-number attributes))
+	   (line-number (cond
+			 ((numberp (cdr line-pair)) (cdr line-pair))
+			 ((stringp (cdr line-pair)) (string-to-int (cdr line-pair)))
+			 (t nil)))
+	   (text (third task)))
+      (when sidebrain-xml-verbose
+	(message "Making task from %S, raw-file=%S file=%S start-time=%S end-time=%S time-spent=%S time-current=%S line-pair=%S"
+		 task raw-file file start-time end-time time-spent time-current line-pair))
+      (make-sidebrain-task :text text
+			   :file file
+			   :line-number line-number
+			   :time-started start-time
+			   :time-ended end-time
+			   :time-spent time-spent
+			   :subtasks subtasks
+			   :suspensions suspensions
+			   ;; todo: keystrokes too (and in writer code)
+			   )
+      )))
 
 (defun sidebrain-forget-all (&optional force)
   "Used when about to re-load all the sidebrain data. Also Useful for debugging."
@@ -369,8 +373,9 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
     (dolist (task (reverse raw-stack-contents))
       (push (sidebrain-extract-task-from-xml task) stack))
     (dolist (obs raw-observations-contents)
-      ;; (message "  Restoring observation %S" obs)
-      (push (third obs) observations))
+      (message "  Restoring observation %S" obs)
+      (when (consp obs)
+	(push (third obs) observations)))
     (cons (unquote-quotes label)
 	  (make-sidebrain-task-stack
 	   :tasks stack
@@ -383,9 +388,10 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
 (defun sidebrain-restore-queue (task-queue)
   "From the xml list TASK-QUEUE, restore task queue data."
   (dolist (queue-entry task-queue)
-    (when sidebrain-xml-verbose (message "Restoring queue entry %S" queue-entry))
-    (push (sidebrain-build-queue-entry queue-entry)
-	  (cdr sidebrain-current-project))))
+    (when (consp queue-entry)
+      (when sidebrain-xml-verbose (message "Restoring queue entry %S" queue-entry))
+      (push (sidebrain-build-queue-entry queue-entry)
+	    (cdr sidebrain-current-project)))))
 
 (defvar sidebrain-saved-at ""
   "When we last saved the sidebrain data.")
@@ -416,24 +422,37 @@ disturb the existing data structures, unless optional argument non-nil."
 	 ;; (observations (cddr (assoc 'observations sidebrain)))
 	 ;; (history (cddr (assoc 'history sidebrain-history-holder)))
 	 )
+    ;; (message "Raw data is %S" raw-data)
+    (message "Sidebrain is %S" sidebrain)
+    (message "Project groups holder is %S" project-groups-holder)
+    (message "Project groups is %S" project-groups)
+    (message "Current project group is %S" current-project-group)
     (if (or force (not (string= saved-at sidebrain-saved-at)))
 	(progn
 	  (sidebrain-forget-all t)
 	  (dolist (project-group project-groups)
-	    (let ((group-name (cdr (assoc 'name (cadr project-group)))))
-	      (when sidebrain-xml-verbose
-		(message "restoring project group called %S: %S" group-name project-group))
-	      (sidebrain-set-project-group group-name)
-	      (dolist (project-holder (cddr project-group))
-		(when (eq (car project-holder) 'project)
-		  (let ((project-name (cdr (assoc 'name (cadr project-holder))))
-			(task-queue (cddr (assoc 'task-queue (cddr project-holder))))
-			)
-		    (sidebrain-set-project project-name t)
-		    (when sidebrain-xml-verbose
-		      (message "restoring project called %S: queue is %S" project-name task-queue))
-		    (sidebrain-restore-queue task-queue)
-		    )))
+	    (message "project-group %S" project-group)
+	    (if (consp project-group)
+		(let ((group-name (cdr (assoc 'name (cadr project-group)))))
+		  (when sidebrain-xml-verbose
+		    (message "restoring project group called %S: %S" group-name project-group))
+		  (sidebrain-set-project-group group-name)
+		  (dolist (project-holder (cddr project-group))
+		    (if (consp project-holder)
+			(when (eq (car project-holder) 'project)
+			  (message "project-holder is %S" project-holder) ; debugging emacs22 problem
+			  (let ((project-name (cdr (assoc 'name (cadr project-holder))))
+				(task-queue (cddr (assoc 'task-queue (cddr project-holder))))
+				)
+			    (sidebrain-set-project project-name t)
+			    (when sidebrain-xml-verbose
+			      (message "restoring project called %S: queue is %S" project-name task-queue))
+			    (sidebrain-restore-queue task-queue)
+			    ))
+		      ;; (message "Project holder %S not a list" project-holder)
+		      ))
+		  )
+	      ;; (message "Project group %S not a list" project-group)
 	      ))
 	  ;; todo: now restore history
 	  (when sidebrain-xml-verbose (message "sidebrain-history-holder is %S" sidebrain-history-holder))
@@ -445,8 +464,9 @@ disturb the existing data structures, unless optional argument non-nil."
 	  ;; xml tasks-suspended goes to sidebrain-suspension-history
 	  (when sidebrain-xml-verbose (message "Suspended tasks were %S" suspended))
 	  (dolist (suspended-task suspended)
-	    (push (sidebrain-build-queue-entry suspended-task)
-		  sidebrain-suspension-history))
+	    (when (consp suspended-task)
+	      (push (sidebrain-build-queue-entry suspended-task)
+		    sidebrain-suspension-history)))
 	  (sidebrain-display))
       (message "Did not update sidebrain data from %s, as it appears to be the one we wrote"
 	       sidebrain-file-name))))
