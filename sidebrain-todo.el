@@ -1,5 +1,5 @@
 ;;;; sidebrain-todo.el -- sidebrain interface to traditional comments in file
-;;; Time-stamp: <2006-04-11 10:18:53 john>
+;;; Time-stamp: <2006-12-03 16:15:12 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -45,8 +45,12 @@ Behaves sensibly if either or both are null."
 	  nil)))))
 
 (defun sidebrain-determine-project ()
-  "Determine, if possible, the group and project to use.
-Returns t if it did so, nil otherwise."
+  "Determine, if possible, the group and project to use for the current file.
+Returns t if it did so, nil otherwise.
+Uses sidebrain-determine-project-hook first, and then
+sidebrain-file-projects.
+If no project is found: if sidebrain-use-default-project, the project
+other:other is used, otherwise the user is prompted."
   (let* ((group-and-project (run-hook-with-args-until-success
 			     'sidebrain-determine-project-hook
 			     buffer-file-name)))
@@ -58,7 +62,7 @@ Returns t if it did so, nil otherwise."
 	  (if (string-match (caar elts) buffer-file-name)
 	      (setq group-and-project (cdar elts))
 	    (setq elts (cdr elts))))))
-      ;; (message "Got %S and group and project for %s" group-and-project buffer-file-name))
+    ;; (message "Got %S and group and project for %s" group-and-project buffer-file-name))
     (if group-and-project
 	(if (equal group-and-project '(nil nil))
 	    nil
@@ -72,12 +76,13 @@ Returns t if it did so, nil otherwise."
 	    (sidebrain-set-project-group "other" t)
 	    (sidebrain-set-project "other" t)
 	    t)
-	(if (y-or-n-p "Assign to do comments to a project? ")
+	(if (y-or-n-p (format "Assign to do comments in %s to a project? " (or (buffer-file-name)
+									       (buffer-name))))
 	    (progn
 	      (sidebrain-set-project-group (format "Project group %s belongs to: "
-						      buffer-file-name))
+						   buffer-file-name))
 	      (sidebrain-set-project (format "Project %s belongs to: "
-						buffer-file-name))
+					     buffer-file-name))
 	      t)
 	  nil)))))
 
