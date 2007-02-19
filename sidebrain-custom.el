@@ -1,5 +1,5 @@
 ;;;; sidebrain-custom.el -- customization for sidebrain
-;;; Time-stamp: <2006-04-12 11:52:21 john>
+;;; Time-stamp: <2006-11-11 19:43:44 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -283,7 +283,8 @@ sidebrain-buffer."
 
 (defcustom sidebrain-frame-parameters 
   '((width . 80) (height . 8)
-    (auto-raise t)
+    ;; (auto-raise t)
+    ;; (auto-raise nil)
     (top . 0)
     (left . 0)
     (menu-bar-lines 1)
