@@ -1,5 +1,5 @@
 ;;;; sidebrain-commands.el -- main commands for sidebrain
-;;; Time-stamp: <2006-05-05 12:15:14 john>
+;;; Time-stamp: <2006-12-05 11:26:15 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -86,10 +86,11 @@ project)))
   (sidebrain-command-tidyup))
 
 ;;;###autoload
-(defun sidebrain-end-task (&optional no-display filter-functions)
+(defun sidebrain-end-task (&optional no-display filter-functions no-auto-resume)
   "End the topmost task on the stack.
 With optional arg non-nil, don't update the display.
-Second optional is functions to use instead of those on sidebrain-record-task-hook."
+Second optional arg is functions to use instead of those on sidebrain-record-task-hook.
+Third optional arg says don't offer to resume a linked task."
   (interactive)
   (let* ((task (car (sidebrain-task-stack))))
     (if task
@@ -131,7 +132,8 @@ Second optional is functions to use instead of those on sidebrain-record-task-ho
 		  (let ((link-group (sidebrain-task-stack-link-group task-struct))
 			(link-project (sidebrain-task-stack-link-project task-struct))
 			(link-task (sidebrain-task-stack-link-task task-struct)))
-		    (when (and (stringp link-group)
+		    (when (and (not no-auto-resume)
+			       (stringp link-group)
 			       (stringp link-project)
 			       (stringp link-task)
 			       (yes-or-no-p
@@ -180,6 +182,13 @@ Second optional is functions to use instead of those on sidebrain-record-task-ho
 	    (sidebrain-command-tidyup)))
       (message "No task to end"))
     task))
+
+(defun sidebrain-end-task-stack (&optional no-auto-resume)
+  "End all the tasks on the stack.
+Optional arg says don't offer to resume a linked task."
+  (interactive)
+  (while (sidebrain-task-stack)
+    (sidebrain-end-task t nil no-auto-resume)))
 
 ;;;###autoload
 (defun sidebrain-abandon-task (&optional no-display)
