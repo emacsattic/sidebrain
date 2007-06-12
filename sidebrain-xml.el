@@ -1,5 +1,5 @@
 ;;;; sidebrain-xml.el -- save and reload sidebrain data using an XML file
-;;; Time-stamp: <2007-02-13 20:06:49 jcgs>
+;;; Time-stamp: <2007-05-20 21:09:01 jcgs>
 
 ;;  This program is free software; you can redistribute it and/or modify it
 ;;  under the terms of the GNU General Public License as published by the
@@ -31,58 +31,59 @@ Controlled by sidebrain-save-after-commands."
 
 (defun sidebrain-insert-task-to-xml (task prefix)
   "Insert a representation of TASK."
-  (unless (sidebrain-task-p task) (error "Cannot save %S as a task, as it is not a task." task))
-  (let* ((copied (sidebrain-task-text task))
-	 (start-time (sidebrain-task-time-started task))
-	 (end-time (sidebrain-task-time-ended task))
-	 (time-spent (sidebrain-task-time-spent task))
-	 (time-current (sidebrain-task-time-current task))
-	 (time-this-time (sidebrain-task-time-this-time task))
-	 (subtasks (sidebrain-task-subtasks task))
-	 (suspensions (sidebrain-task-suspensions task))
-	 (abandoned (sidebrain-task-abandoned task))
-	 (keystrokes (sidebrain-task-keystrokes task))
-	 (raw-file (sidebrain-task-file task))
-	 (file (sidebrain-ok-file-name raw-file))
-	 (modified-file-name (and file
-				  (run-hook-with-args-until-success
-				   'sidebrain-filename-save-hooks
-				   file)))
-	 (line-number (sidebrain-task-line-number task))
-	 (spacer (if sidebrain-save-more-readable
-		     (concat "\n" prefix "      ")
-		   " "))
-	 (attributes nil)
-	 )
-    (when (null modified-file-name) (setq modified-file-name file))
-    (when (and start-time (not (zero-time-p start-time)))
-      (push (format "time-started=\"%s\"" (current-time-string start-time)) attributes))
-    (when (and end-time (not (zero-time-p end-time)))
-      (push (format "time-ended=\"%s\"" (current-time-string end-time)) attributes))
-    (when (and time-spent (not (zero-time-p time-spent)))
-      (push (format "time-spent=\"%d\"" (time-as-seconds time-spent)) attributes))
-    (when (and time-current (not (zero-time-p time-current)))
-      (push (format "time-current=\"%d\"" (time-as-seconds time-current)) attributes))
-    (when (and time-this-time (not (zero-time-p time-this-time)))
-      (push (format "time-this-time=\"%d\"" (time-as-seconds time-this-time)) attributes))
-    (when abandoned (push "abandoned=\"yes\"" attributes))
-    (when (stringp modified-file-name)
-      (push (format "file=\"%s\"" modified-file-name) attributes))
-    (when (numberp line-number)
-      (push (format "line-number=\"%d\"" line-number) attributes))
-    (when (and (numberp subtasks) (not (zerop subtasks)))
-      (push (format "subtasks=\"%d\"" subtasks) attributes))
-    (when (and (numberp suspensions) (not (zerop suspensions)))
-      (push (format "suspensions=\"%d\"" suspensions) attributes))
-    (when (and (numberp keystrokes) (not (zerop keystrokes)))
-      (push (format "keystrokes=\"%d\"" keystrokes) attributes))
-    (insert (concat
-	     prefix
-	     "<task "
-	     (mapconcat 'identity attributes spacer)
-	     ">"
-	     copied
-	     "</task>\n"))))
+  (if (not (sidebrain-task-p task))
+      (message "Cannot save %S as a task, as it is not a task." task)
+    (let* ((copied (sidebrain-task-text task))
+	   (start-time (sidebrain-task-time-started task))
+	   (end-time (sidebrain-task-time-ended task))
+	   (time-spent (sidebrain-task-time-spent task))
+	   (time-current (sidebrain-task-time-current task))
+	   (time-this-time (sidebrain-task-time-this-time task))
+	   (subtasks (sidebrain-task-subtasks task))
+	   (suspensions (sidebrain-task-suspensions task))
+	   (abandoned (sidebrain-task-abandoned task))
+	   (keystrokes (sidebrain-task-keystrokes task))
+	   (raw-file (sidebrain-task-file task))
+	   (file (sidebrain-ok-file-name raw-file))
+	   (modified-file-name (and file
+				    (run-hook-with-args-until-success
+				     'sidebrain-filename-save-hooks
+				     file)))
+	   (line-number (sidebrain-task-line-number task))
+	   (spacer (if sidebrain-save-more-readable
+		       (concat "\n" prefix "      ")
+		     " "))
+	   (attributes nil)
+	   )
+      (when (null modified-file-name) (setq modified-file-name file))
+      (when (and start-time (not (zero-time-p start-time)))
+	(push (format "time-started=\"%s\"" (current-time-string start-time)) attributes))
+      (when (and end-time (not (zero-time-p end-time)))
+	(push (format "time-ended=\"%s\"" (current-time-string end-time)) attributes))
+      (when (and time-spent (not (zero-time-p time-spent)))
+	(push (format "time-spent=\"%d\"" (time-as-seconds time-spent)) attributes))
+      (when (and time-current (not (zero-time-p time-current)))
+	(push (format "time-current=\"%d\"" (time-as-seconds time-current)) attributes))
+      (when (and time-this-time (not (zero-time-p time-this-time)))
+	(push (format "time-this-time=\"%d\"" (time-as-seconds time-this-time)) attributes))
+      (when abandoned (push "abandoned=\"yes\"" attributes))
+      (when (stringp modified-file-name)
+	(push (format "file=\"%s\"" modified-file-name) attributes))
+      (when (numberp line-number)
+	(push (format "line-number=\"%d\"" line-number) attributes))
+      (when (and (numberp subtasks) (not (zerop subtasks)))
+	(push (format "subtasks=\"%d\"" subtasks) attributes))
+      (when (and (numberp suspensions) (not (zerop suspensions)))
+	(push (format "suspensions=\"%d\"" suspensions) attributes))
+      (when (and (numberp keystrokes) (not (zerop keystrokes)))
+	(push (format "keystrokes=\"%d\"" keystrokes) attributes))
+      (insert (concat
+	       prefix
+	       "<task "
+	       (mapconcat 'identity attributes spacer)
+	       ">"
+	       copied
+	       "</task>\n")))))
 
 (defun sidebrain-save-task-stack-contents (stack prefix)
   "Save a stack. Assumes the <stack></stack> will be written by our caller."
@@ -124,6 +125,7 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
 (defun sidebrain-save-task-stack (task label prefix)
   "Save TASK to file, using LABEL and putting PREFIX at the start of each line."
   (when (and (sidebrain-task-stack-p task)
+	     (sidebrain-task-p (car (sidebrain-task-stack-tasks task)))
 	     (stringp label))
     (let* ((stack (sidebrain-task-stack-tasks task))
 	   (observations (sidebrain-task-stack-observations task))
@@ -135,29 +137,41 @@ If UNQUOTED-QUOTE is given, it is the representation to expect for a quote."
 			   file))
 	   (link-group (sidebrain-task-stack-link-group task))
 	   (link-project (sidebrain-task-stack-link-project task))
-	   (link-task (sidebrain-task-stack-link-task task)))
+	   (link-task (sidebrain-task-stack-link-task task))
+	   (starting-in-xml-file (point)))
       (when modified-file (setq file modified-file))
-      (insert prefix "    <task-queue-element label=\"" label "\"")
-      (when file
-	(insert " file=\"" file "\""))
-      (when priority
-	(insert (format " priority=\"%S\"" priority)))
-      (run-hook-with-args 'sidebrain-save-label-hook label)
-      (insert ">\n")
+      (condition-case evar
+	  (progn
+	    (insert prefix "    <task-queue-element label=\"" label "\"")
+	    (when file
+	      (insert " file=\"" file "\""))
+	    (when priority
+	      (insert (format " priority=\"%S\"" priority)))
+	    (run-hook-with-args 'sidebrain-save-label-hook label)
+	    (insert ">\n")
 
-      (when stack
-	(insert prefix "      <task-stack")
-	(when (and link-group link-project link-task)
-	  (insert " link-group=\"" link-group
-		  "\" link-project=\"" link-project
-		  "\" link-task=\"" link-task
-		  "\""))
-	(insert ">\n")
-	(sidebrain-save-task-stack-contents stack (concat prefix "        "))
-	(insert prefix "      </task-stack>\n"))
-      (when observations
-	(sidebrain-save-observations observations (concat prefix "    ")))
-      (insert prefix "    </task-queue-element>\n"))))
+	    (when stack
+	      (insert prefix "      <task-stack")
+	      (when (and link-group link-project link-task)
+		(insert " link-group=\"" link-group
+			"\" link-project=\"" link-project
+			"\" link-task=\"" link-task
+			"\""))
+	      (insert ">\n")
+	      (sidebrain-save-task-stack-contents stack (concat prefix "        "))
+	      (insert prefix "      </task-stack>\n"))
+	    (when observations
+	      (sidebrain-save-observations observations (concat prefix "    ")))
+	    (insert prefix "    </task-queue-element>\n"))
+	;; unwinders
+	(error (message "Problem in XML output, retracting some of it")
+	       (if nil
+		   (delete-region starting-in-xml-file (point))
+		 (insert "\n-->\n")
+		 (save-excursion
+		   (goto-char starting-in-xml-file)
+		   (insert "\n<!-- \n"))
+		 ))))))
 
 (defun sidebrain-save-task-queue (this-queue &optional prefix)
   "Save THIS-QUEUE. Optionally output PREFIX at the start of each line."
